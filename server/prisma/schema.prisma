@@ -1,0 +1,67 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["linux-musl-openssl-3.0.x", "debian-openssl-1.1.x"]
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  username       String   @unique
+  email          String   @unique
+  hashedPassword String
+  role           Role     @default(USER)
+
+  question Question[]
+  sessions Session[]
+  Comment  Comment[]
+}
+
+model Session {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  endedAt   DateTime?
+  title     String
+
+  owner     User       @relation(fields: [ownerId], references: [id], onDelete: NoAction)
+  ownerId   Int
+  questions Question[]
+}
+
+model Question {
+  id        Int       @id @default(autoincrement())
+  value     String
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: NoAction)
+  userId    Int
+  session   Session   @relation(fields: [sessionId], references: [id], onDelete: NoAction)
+  sessionId Int
+  comments  Comment[]
+}
+
+model Comment {
+  id        Int       @id @default(autoincrement())
+  value     String
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: NoAction)
+  userId          Int
+  question        Question  @relation(fields: [questionId], references: [id], onDelete: NoAction)
+  questionId      Int
+  commentTo       Comment?  @relation("CommentOfComment", fields: [parentCommentId], references: [id], onDelete: NoAction)
+  parentCommentId Int?
+  comments        Comment[] @relation("CommentOfComment")
+}
+
+enum Role {
+  USER
+  ADMIN
+}

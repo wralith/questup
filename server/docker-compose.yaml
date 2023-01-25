@@ -1,0 +1,28 @@
+version: "3.9"
+services:
+  database:
+    image: postgres:alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=questup
+    container_name: dev-postgres
+    ports:
+      - 5432:5432
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - database
+    environment:
+      PORT: 8080
+    expose:
+      - 8080
+    ports:
+      - 8080:8080
+    volumes:
+      - ./:/app
+    container_name: dev-server
+    command: npm run dev
