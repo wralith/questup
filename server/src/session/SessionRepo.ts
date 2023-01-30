@@ -12,6 +12,15 @@ export default class SessionRepo {
 			where: {
 				id: id,
 			},
+			include: {
+				owner: {
+					select: {
+						id: true,
+						username: true,
+						email: true,
+					},
+				},
+			},
 		})
 	}
 
@@ -29,6 +38,15 @@ export default class SessionRepo {
 	async paginate({ limit, offset }: { limit: number; offset: number }) {
 		return this.#db.session.findMany({
 			skip: offset * limit,
+			include: {
+				owner: {
+					select: {
+						id: true,
+						username: true,
+						email: true,
+					},
+				},
+			},
 			take: limit,
 			orderBy: { createdAt: "asc" },
 		})

@@ -31,6 +31,13 @@ export type PaginateCommentsByParentOpts = {
 	offset: number
 }
 
+const selectUsersField = {
+	id: true,
+	username: true,
+	email: true,
+	role: true,
+}
+
 export default class QuestionRepo {
 	#db: PrismaClient
 
@@ -42,6 +49,10 @@ export default class QuestionRepo {
 		return this.#db.question.findUnique({
 			where: {
 				id: id,
+			},
+			include: {
+				user: { select: selectUsersField },
+				comments: true,
 			},
 		})
 	}
@@ -65,6 +76,10 @@ export default class QuestionRepo {
 	async paginateQuestions({ sessionId, limit, offset }: PaginateQuestionsOpts) {
 		return this.#db.question.findMany({
 			where: { sessionId },
+			include: {
+				user: { select: selectUsersField },
+				comments: true,
+			},
 			skip: offset * limit,
 			take: limit,
 			orderBy: { createdAt: "asc" },
@@ -75,6 +90,10 @@ export default class QuestionRepo {
 		return this.#db.comment.findUnique({
 			where: {
 				id: id,
+			},
+			include: {
+				user: true,
+				comments: true,
 			},
 		})
 	}
@@ -110,6 +129,10 @@ export default class QuestionRepo {
 	async paginateCommentsByQuestion({ questionId, limit, offset }: PaginateCommentsByQuestionOpts) {
 		return this.#db.comment.findMany({
 			where: { questionId, commentTo: null },
+			include: {
+				user: { select: selectUsersField },
+				comments: true,
+			},
 			skip: offset * limit,
 			take: limit,
 			orderBy: { createdAt: "asc" },
@@ -119,6 +142,10 @@ export default class QuestionRepo {
 	async paginateCommentsByParent({ parentId, limit, offset }: PaginateCommentsByParentOpts) {
 		return this.#db.comment.findMany({
 			where: { parentCommentId: parentId },
+			include: {
+				user: { select: selectUsersField },
+				comments: true,
+			},
 			skip: offset * limit,
 			take: limit,
 			orderBy: { createdAt: "asc" },
